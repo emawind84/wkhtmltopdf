@@ -24,6 +24,7 @@
 #include <QNetworkProxy>
 #include <QPrinter>
 #include <QString>
+#include <wkhtmltox/logging.hh>
 #include <wkhtmltox/loadsettings.hh>
 #include <wkhtmltox/websettings.hh>
 
@@ -85,8 +86,8 @@ struct DLL_PUBLIC PdfGlobal {
 	//! Size related settings
 	Size size;
 
-	//! Be less verbose
-	bool quiet;
+	//! Log level
+	LogLevel logLevel;
 
 	//! Should we use the graphics system
 	bool useGraphics;
@@ -158,7 +159,7 @@ struct DLL_PUBLIC HeaderFooter {
 	QString right;
 	//! Text to render at the center
 	QString center;
-	//! Should a line seperate the header/footer and the document
+	//! Should a line separate the header/footer and the document
 	bool line;
 	//! Url of the document the html document that should be used as a header/footer
 	QString htmlUrl;

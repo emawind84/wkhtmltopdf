@@ -57,6 +57,9 @@ ReflectImpl<LoadGlobal>::ReflectImpl(LoadGlobal & c) {
 ReflectImpl<LoadPage>::ReflectImpl(LoadPage & c) {
 	WKHTMLTOPDF_REFLECT(username);
 	WKHTMLTOPDF_REFLECT(password);
+	WKHTMLTOPDF_REFLECT(clientSslKeyPath);
+	WKHTMLTOPDF_REFLECT(clientSslKeyPassword);
+	WKHTMLTOPDF_REFLECT(clientSslCrtPath);
 	WKHTMLTOPDF_REFLECT(jsdelay);
 	WKHTMLTOPDF_REFLECT(windowStatus);
 	WKHTMLTOPDF_REFLECT(zoomFactor);
@@ -77,6 +80,7 @@ ReflectImpl<LoadPage>::ReflectImpl(LoadPage & c) {
 	WKHTMLTOPDF_REFLECT(radiobuttonCheckedSvg);
 	WKHTMLTOPDF_REFLECT(cacheDir);
 	WKHTMLTOPDF_REFLECT(bypassProxyForHosts);
+	WKHTMLTOPDF_REFLECT(proxyHostNameLookup);
 }
 
 ReflectImpl<Web>::ReflectImpl(Web & c) {

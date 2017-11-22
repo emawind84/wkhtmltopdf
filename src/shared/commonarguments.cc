@@ -203,9 +203,13 @@ void CommandLineParserBase::addPageLoadArgs(LoadPage & s) {
 	extended(true);
 	qthack(false);
 	addarg("proxy",'p',"Use a proxy", new ProxySetter(s.proxy, "proxy"));
+	addarg("proxy-hostname-lookup", 0, "Use the proxy for resolving hostnames", new ConstSetter<bool>(s.proxyHostNameLookup, true));
 	addarg("bypass-proxy-for", 0, "Bypass proxy for host (repeatable)", new StringListSetter(s.bypassProxyForHosts, "value"));
 	addarg("username",0,"HTTP Authentication username", new QStrSetter(s.username, "username"));
 	addarg("password",0,"HTTP Authentication password", new QStrSetter(s.password, "password"));
+	addarg("ssl-key-path",0,"Path to ssl client cert private key in OpenSSL PEM format", new QStrSetter(s.clientSslKeyPath, "path"));
+	addarg("ssl-key-password",0,"Password to ssl client cert private key", new QStrSetter(s.clientSslKeyPassword, "password"));
+	addarg("ssl-crt-path",0,"Path to the ssl client cert public key in OpenSSL PEM format, optionally followed by intermediate ca and trusted certs", new QStrSetter(s.clientSslCrtPath, "path"));
 	addarg("load-error-handling", 0, "Specify how to handle pages that fail to load: abort, ignore or skip", new LoadErrorHandlingSetting(s.loadErrorHandling, "handler"));
 	addarg("load-media-error-handling", 0, "Specify how to handle media files that fail to load: abort, ignore or skip", new LoadErrorHandlingSetting(s.mediaLoadErrorHandling, "handler"));
 	addarg("custom-header",0,"Set an additional HTTP header (repeatable)", new MapSetter<>(s.customHeaders, "name", "value"));

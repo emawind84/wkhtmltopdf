@@ -76,7 +76,7 @@
  * - \b load.debugJavascript Forward javascript warnings and errors to the warning callback.
  *      Must be either "true" or "false".
  * - \b load.loadErrorHandling How should we handle obejcts that fail to load. Must be one of:
- *      - "abort" Abort the convertion process
+ *      - "abort" Abort the conversion process
  *      - "skip" Do not add the object to the final output
  *      - "ignore" Try to add the object to the final output.
  * - \b load.proxy String describing what proxy to use when loading the object.
@@ -99,7 +99,7 @@
  *
  * \section pagePdfGlobal Pdf global settings
  * The \ref wkhtmltopdf_global_settings structure contains the following settings:
- * - \b size.paperSize  The paper size of the output document, e.g. "A4".
+ * - \b size.pageSize  The paper size of the output document, e.g. "A4".
  * - \b size.width The with of the output document, e.g.  "4cm".
  * - \b size.height The height of the output document, e.g. "12in".
  * - \b orientation The orientation of the output document, must be either "Landscape" or "Portrait".
@@ -209,11 +209,11 @@ QApplication * a = 0;
 int usage = 0;
 
 void MyPdfConverter::warning(const QString & message) {
-	if (warning_cb) (warning_cb)(reinterpret_cast<wkhtmltopdf_converter*>(this), message.toUtf8().constData());
+	if (warning_cb && globalSettings->logLevel > settings::Error) (warning_cb)(reinterpret_cast<wkhtmltopdf_converter*>(this), message.toUtf8().constData());
 }
 
 void MyPdfConverter::error(const QString & message) {
-	if (error_cb) (error_cb)(reinterpret_cast<wkhtmltopdf_converter*>(this), message.toUtf8().constData());
+	if (error_cb && globalSettings->logLevel > settings::None) (error_cb)(reinterpret_cast<wkhtmltopdf_converter*>(this), message.toUtf8().constData());
 }
 
 void MyPdfConverter::phaseChanged() {
@@ -357,11 +357,11 @@ CAPI(void) wkhtmltopdf_destroy_global_settings(wkhtmltopdf_global_settings * obj
  *
  * \param settings The settings object to change
  * \param name The name of the setting
- * \param value The new value for the setting
+ * \param value The new value for the setting (encoded in UTF-8)
  * \returns 1 if the setting was updated successfully and 0 otherwise.
  */
 CAPI(int) wkhtmltopdf_set_global_setting(wkhtmltopdf_global_settings * settings, const char * name, const char * value) {
-	return reinterpret_cast<settings::PdfGlobal *>(settings)->set(name, value);
+	return reinterpret_cast<settings::PdfGlobal *>(settings)->set(name, QString::fromUtf8(value));
 }
 
 /**
@@ -371,7 +371,7 @@ CAPI(int) wkhtmltopdf_set_global_setting(wkhtmltopdf_global_settings * settings,
  *
  * \param settings The settings object to inspect
  * \param name The name of the setting to read
- * \param value A buffer of length at least \a vs, where the value is stored.
+ * \param value A buffer of length at least \a vs, where the value (encoded in UTF-8) is stored.
  * \param vs The length of \a value
  * \returns 1 If the the setting exists and was read successfully and 0 otherwise
  */
@@ -414,21 +414,21 @@ CAPI(void) wkhtmltopdf_destroy_object_settings(wkhtmltopdf_object_settings * obj
  *
  * \param settings The settings object to change
  * \param name The name of the setting
- * \param value The new value for the setting
+ * \param value The new value for the setting (encoded in UTF-8)
  * \returns 1 if the setting was updated successfully and 0 otherwise.
  */
 CAPI(int) wkhtmltopdf_set_object_setting(wkhtmltopdf_object_settings * settings, const char * name, const char * value) {
-	return reinterpret_cast<settings::PdfObject *>(settings)->set(name, value);
+	return reinterpret_cast<settings::PdfObject *>(settings)->set(name, QString::fromUtf8(value));
 }
 
 /**
- * \brief Retrieve a setting in a global settings object
+ * \brief Retrieve a setting in a object settings object
  *
  * \sa \ref pagesettings, wkhtmltopdf_create_global_settings, wkhtmltopdf_set_global_setting
  *
  * \param settings The settings object to inspect
  * \param name The name of the setting to read
- * \param value A buffer of length at least \a vs, where the value is stored.
+ * \param value A buffer of length at least \a vs, where the value is stored (encoded in UTF-8).
  * \param vs The length of \a value
  * \returns 1 If the the setting exists and was read successfully and 0 otherwise
  */
@@ -468,21 +468,21 @@ CAPI(void) wkhtmltopdf_destroy_converter(wkhtmltopdf_converter * converter) {
 }
 
 /**
- * \brief Set the function that should be called when an errors occurs during conversion
+ * \brief Set the function that should be called when an warning message is issued during conversion
  *
- * \param converter The converter object on which errors we want the callback to be called
- * \param cb The function to call when an error occurs
+ * \param converter The converter object on which warnings we want the callback to be called
+ * \param cb The function to call when warning message is issued
+ *
  */
 CAPI(void) wkhtmltopdf_set_warning_callback(wkhtmltopdf_converter * converter, wkhtmltopdf_str_callback cb) {
 	reinterpret_cast<MyPdfConverter *>(converter)->warning_cb = cb;
 }
 
 /**
- * \brief Set the function that should be called when an warning message is issued during conversion
+ * \brief Set the function that should be called when an errors occurs during conversion
  *
- * \param converter The converter object on which warnings we want the callback to be called
- * \param cb The function to call when warning message is issued
- *
+ * \param converter The converter object on which errors we want the callback to be called
+ * \param cb The function to call when an error occurs
  */
 CAPI(void) wkhtmltopdf_set_error_callback(wkhtmltopdf_converter * converter, wkhtmltopdf_str_callback cb) {
 	reinterpret_cast<MyPdfConverter *>(converter)->error_cb = cb;
@@ -530,7 +530,7 @@ CAPI(void) wkhtmltopdf_set_finished_callback(wkhtmltopdf_converter * converter, 
 }
 
 //CAPI(void) wkhtmltopdf_begin_conversion(wkhtmltopdf_converter * converter) {
-//	reinterpret_cast<MyPdfConverter *>(converter)->converter.beginConvertion();
+//	reinterpret_cast<MyPdfConverter *>(converter)->converter.beginConversion();
 //}
 
 /**
@@ -566,7 +566,7 @@ CAPI(int) wkhtmltopdf_convert(wkhtmltopdf_converter * converter) {
  *
  * \param converter The converter to add the object to
  * \param settings The setting describing the object to add
- * \param data HTML content of the object to convert or NULL
+ * \param data HTML content of the object to convert (encoded in UTF-8) or NULL
  */
 CAPI(void) wkhtmltopdf_add_object(wkhtmltopdf_converter * converter, wkhtmltopdf_object_settings * settings, const char * data) {
 	QString str= QString::fromUtf8(data);
@@ -679,10 +679,11 @@ CAPI(long) wkhtmltopdf_get_output(wkhtmltopdf_converter * converter, const unsig
 //  LocalWords:  QString cb bool ok globalSettings phaseChanged progressChanged
 //  LocalWords:  objectSettings utf CropSettings HeaderFooter ImageGlobal dpi sa
 //  LocalWords:  PdfGlobal PdfObject TableOfContent pagePdfGlobal pagePdfObject
-//  LocalWords:  pageImageGlobal pageGlobalLoad paperSize colorMode Grayscale
+//  LocalWords:  pageImageGlobal pageGlobalLoad pageSize colorMode Grayscale
 //  LocalWords:  pageOffset outlineDepth dumpOutline stdout pageLoad pageWeb aa
 //  LocalWords:  includeInOutline pagesCount tocXsl xsl struct typedef str CAPI
 //  LocalWords:  param STRINGIZEE STRINGIZE deinit qApp strcpy wkhtmltox arg ug
 //  LocalWords:  WS MACX MyLooksStyle setStyle isNull qstrncpy MyPdfConverter
-//  LocalWords:  beginConvertion paragm addResource currentPhase phaseCount
-//  LocalWords:  urrent http httpErrorCode QByteArray constData
+//  LocalWords:  beginConversion beginConvertion paragm addResource
+//  LocalWords:  currentPhase phaseCount urrent http httpErrorCode QByteArray
+//  LocalWords:  constData

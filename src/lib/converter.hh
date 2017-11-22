@@ -35,7 +35,7 @@ public:
 	virtual ~Converter() {};
 
     int currentPhase();
-	int phaseCount();
+    int phaseCount();
     QString phaseDescription(int phase=-1);
     QString progressString();
     int httpErrorCode();
@@ -51,7 +51,7 @@ signals:
 	void radiobuttonSvgChanged(const QString & path);
 	void radiobuttonCheckedSvgChanged(const QString & path);
 public slots:
-    void beginConvertion();
+    void beginConversion();
 	bool convert();
 	void cancel();
 protected:
